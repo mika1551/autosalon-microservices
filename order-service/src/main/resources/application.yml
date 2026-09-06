@@ -1,0 +1,42 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: order-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order_db
+    username: postgres
+    password: pass
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8081/realms/autosalon/protocol/openid-connect/certs
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+grpc:
+  client:
+    storageService:
+      address: static://127.0.0.1:9091
+      negotiationType: plaintext
+

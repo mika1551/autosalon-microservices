@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-outbox-events
+      author: Mika
+      changes:
+        - createTable:
+            tableName: outbox_events
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: aggregate_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: trace_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: event_type, type: varchar(255), constraints: { nullable: false } }
+              - column: { name: payload, type: text, constraints: { nullable: false } }
+              - column: { name: status, type: varchar(50), constraints: { nullable: false } }
+              - column: { name: sent_at, type: timestamp with time zone }
+              - column: { name: created_at, type: timestamp with time zone }
+              - column: { name: updated_at, type: timestamp with time zone }
+              - column: { name: removed, type: boolean, defaultValueBoolean: false, constraints: { nullable: false } }

@@ -1,0 +1,221 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-users
+      author: Mika
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: username, type: varchar(255), constraints: { nullable: false } }
+              - column: { name: role, type: varchar(50), constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone }
+              - column: { name: updated_at, type: timestamp with time zone }
+              - column: { name: removed, type: boolean, defaultValueBoolean: false, constraints: { nullable: false } }
+
+  - changeSet:
+      id: 002-create-cars
+      author: Mika
+      changes:
+        - createTable:
+            tableName: cars
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: color, type: varchar(100) }
+              - column: { name: model, type: varchar(100) }
+              - column: { name: brand, type: varchar(100) }
+              - column: { name: year, type: int }
+              - column: { name: base_price, type: "numeric(19,2)" }
+              - column: { name: discount_price, type: "numeric(19,2)" }
+              - column: { name: body_type, type: varchar(50) }
+              - column: { name: mileage_km, type: int }
+              - column: { name: fuel_type, type: varchar(50) }
+              - column: { name: engine_type, type: varchar(50) }
+              - column: { name: transmission_type, type: varchar(50) }
+              - column: { name: horse_power, type: int }
+              - column: { name: engine_volume_l, type: int }
+              - column: { name: drive_type, type: varchar(50) }
+              - column: { name: available_for_sale, type: boolean }
+              - column: { name: available_for_test_drive, type: boolean }
+              - column: { name: created_at, type: timestamp with time zone }
+              - column: { name: updated_at, type: timestamp with time zone }
+              - column: { name: removed, type: boolean, defaultValueBoolean: false, constraints: { nullable: false } }
+
+  - changeSet:
+      id: 003-create-component-options
+      author: Mika
+      changes:
+        - createTable:
+            tableName: component_options
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: type, type: varchar(50), constraints: { nullable: false } }
+              - column: { name: name, type: varchar(255), constraints: { nullable: false } }
+              - column: { name: price_difference, type: "numeric(19,2)" }
+              - column: { name: created_at, type: timestamp with time zone }
+              - column: { name: updated_at, type: timestamp with time zone }
+              - column: { name: removed, type: boolean, defaultValueBoolean: false, constraints: { nullable: false } }
+
+  - changeSet:
+      id: 004-create-component-option-models
+      author: Mika
+      changes:
+        - createTable:
+            tableName: component_option_models
+            columns:
+              - column: { name: option_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: model, type: varchar(100), constraints: { nullable: false } }
+        - addPrimaryKey:
+            tableName: component_option_models
+            columnNames: option_id, model
+            constraintName: pk_component_option_models
+        - addForeignKeyConstraint:
+            baseTableName: component_option_models
+            baseColumnNames: option_id
+            referencedTableName: component_options
+            referencedColumnNames: id
+            constraintName: fk_component_option_models_option
+
+  - changeSet:
+      id: 005-create-spare-parts
+      author: Mika
+      changes:
+        - createTable:
+            tableName: spare_parts
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: color, type: varchar(100) }
+              - column: { name: brand, type: varchar(100) }
+              - column: { name: name, type: varchar(255) }
+              - column: { name: price, type: "numeric(19,2)" }
+              - column: { name: created_at, type: timestamp with time zone }
+              - column: { name: updated_at, type: timestamp with time zone }
+              - column: { name: removed, type: boolean, defaultValueBoolean: false, constraints: { nullable: false } }
+
+  - changeSet:
+      id: 006-create-spare-part-models
+      author: Mika
+      changes:
+        - createTable:
+            tableName: spare_part_models
+            columns:
+              - column: { name: spare_part_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: model, type: varchar(100), constraints: { nullable: false } }
+        - addPrimaryKey:
+            tableName: spare_part_models
+            columnNames: spare_part_id, model
+            constraintName: pk_spare_part_models
+        - addForeignKeyConstraint:
+            baseTableName: spare_part_models
+            baseColumnNames: spare_part_id
+            referencedTableName: spare_parts
+            referencedColumnNames: id
+            constraintName: fk_spare_part_models_part
+
+  - changeSet:
+      id: 007-create-car-configurations
+      author: Mika
+      changes:
+        - createTable:
+            tableName: car_configurations
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: car_model, type: varchar(100), constraints: { nullable: false } }
+              - column: { name: base_price, type: "numeric(19,2)", constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone }
+              - column: { name: updated_at, type: timestamp with time zone }
+              - column: { name: removed, type: boolean, defaultValueBoolean: false, constraints: { nullable: false } }
+
+  - changeSet:
+      id: 008-create-car-configuration-options
+      author: Mika
+      changes:
+        - createTable:
+            tableName: car_configuration_options
+            columns:
+              - column: { name: configuration_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: component_type, type: varchar(50), constraints: { nullable: false } }
+              - column: { name: option_id, type: uuid, constraints: { nullable: false } }
+        - addPrimaryKey:
+            tableName: car_configuration_options
+            columnNames: configuration_id, component_type
+            constraintName: pk_car_configuration_options
+        - addForeignKeyConstraint:
+            baseTableName: car_configuration_options
+            baseColumnNames: configuration_id
+            referencedTableName: car_configurations
+            referencedColumnNames: id
+            constraintName: fk_car_configuration_options_config
+        - addForeignKeyConstraint:
+            baseTableName: car_configuration_options
+            baseColumnNames: option_id
+            referencedTableName: component_options
+            referencedColumnNames: id
+            constraintName: fk_car_configuration_options_option
+
+  - changeSet:
+      id: 009-create-custom-orders
+      author: Mika
+      changes:
+        - createTable:
+            tableName: custom_orders
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: client_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: manager_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: car_model, type: varchar(100), constraints: { nullable: false } }
+              - column: { name: configuration_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: status, type: varchar(50), constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone }
+              - column: { name: updated_at, type: timestamp with time zone }
+              - column: { name: removed, type: boolean, defaultValueBoolean: false, constraints: { nullable: false } }
+        - addForeignKeyConstraint:
+            baseTableName: custom_orders
+            baseColumnNames: configuration_id
+            referencedTableName: car_configurations
+            referencedColumnNames: id
+            constraintName: fk_custom_orders_configuration
+
+  - changeSet:
+      id: 010-create-stock-orders
+      author: Mika
+      changes:
+        - createTable:
+            tableName: stock_orders
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: client_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: car_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: manager_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: status, type: varchar(50), constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone }
+              - column: { name: updated_at, type: timestamp with time zone }
+              - column: { name: removed, type: boolean, defaultValueBoolean: false, constraints: { nullable: false } }
+
+  - changeSet:
+      id: 011-create-test-drive-requests
+      author: Mika
+      changes:
+        - createTable:
+            tableName: test_drive_requests
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: client_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: car_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: date, type: timestamp with time zone }
+              - column: { name: created_at, type: timestamp with time zone }
+              - column: { name: updated_at, type: timestamp with time zone }
+              - column: { name: removed, type: boolean, defaultValueBoolean: false, constraints: { nullable: false } }
+  - changeSet:
+      id: 012-create-assembly-orders
+      author: Mika
+      changes:
+        - createTable:
+            tableName: assembly_orders
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: source_order_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: status, type: varchar(50), constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone }
+              - column: { name: updated_at, type: timestamp with time zone }
+              - column: { name: removed, type: boolean, defaultValueBoolean: false, constraints: { nullable: false } }

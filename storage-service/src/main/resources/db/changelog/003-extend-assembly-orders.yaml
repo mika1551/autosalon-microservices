@@ -1,0 +1,30 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-extend-assembly-orders
+      author: Mika
+      changes:
+        - addColumn:
+            tableName: assembly_orders
+            columns:
+              - column: { name: source_order_type, type: varchar(50) }
+              - column: { name: car_model, type: varchar(255) }
+              - column: { name: warehouse_admin_id, type: uuid }
+        - createTable:
+            tableName: assembly_order_components
+            columns:
+              - column: { name: assembly_order_id, type: uuid, constraints: { nullable: false } }
+              - column: { name: component_id, type: uuid, constraints: { nullable: false } }
+        - addPrimaryKey:
+            tableName: assembly_order_components
+            columnNames: assembly_order_id, component_id
+            constraintName: pk_assembly_order_components
+        - addForeignKeyConstraint:
+            baseTableName: assembly_order_components
+            baseColumnNames: assembly_order_id
+            referencedTableName: assembly_orders
+            referencedColumnNames: id
+            constraintName: fk_assembly_order_components_order
+        - addUniqueConstraint:
+            tableName: assembly_orders
+            columnNames: source_order_id, source_order_type
+            constraintName: uq_assembly_orders_source_order
