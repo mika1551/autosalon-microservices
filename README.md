@@ -236,3 +236,7 @@ Compile both services:
 - REST endpoints in `order-service` backed by gRPC calls
 - HTTP 503 handling when the gRPC storage service is unavailable
 
+
+## Notes
+
+- This is an educational project. Credentials in Docker Compose and application configuration are development-only values and must not be used in production.
