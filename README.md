@@ -1,6 +1,67 @@
 # Autosalon Microservices
 
-Spring Boot microservices project for a car dealership system. The application demonstrates a gradual transition from a monolithic structure to microservices with separate databases, asynchronous messaging, synchronous gRPC communication, security, migrations, and tests.
+![Java](https://img.shields.io/badge/Java-21-orange)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.5-brightgreen)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
+![RabbitMQ](https://img.shields.io/badge/RabbitMQ-events-orange)
+![gRPC](https://img.shields.io/badge/gRPC-sync%20API-blueviolet)
+![Docker](https://img.shields.io/badge/Docker-Compose-blue)
+
+> Russian version: [README.ru.md](README.ru.md)
+
+Autosalon Microservices is an educational Spring Boot project for a car dealership system. The project demonstrates a gradual transition from a modular backend to a microservice architecture with separate databases, asynchronous messaging, synchronous gRPC communication, authentication, migrations, and tests.
+
+## Overview
+
+The system consists of two backend services:
+
+| Service | Responsibility |
+|---|---|
+| `order-service` | Users, car configurations, test drives, stock orders, custom orders, payment flow, outbox events, and gRPC client calls |
+| `storage-service` | Cars, spare parts, assembly orders, RabbitMQ event processing, and gRPC inventory API |
+
+Shared gRPC contracts are stored in:
+
+```text
+proto/
+```
+
+## Architecture
+
+```text
+Client / Postman / curl
+        |
+        v
+order-service :8082
+        |
+        | gRPC request for available cars
+        v
+storage-service :9091
+        |
+        v
+storage PostgreSQL :5433
+
+order-service
+        |
+        | RabbitMQ event: order paid
+        v
+storage-service
+        |
+        v
+assembly order processing
+```
+
+## Domain-Driven Structure
+
+Both services follow a layered structure:
+
+```text
+domain/          business models, enums, events, repository interfaces
+application/     use cases and application services
+infrastructure/  REST controllers, JPA adapters, gRPC, RabbitMQ, security, exceptions
+```
+
+The main idea is to keep business logic independent from infrastructure details. REST, JPA, RabbitMQ, gRPC, and security are placed in the infrastructure layer.
 
 ## Tech Stack
 
@@ -19,47 +80,11 @@ Spring Boot microservices project for a car dealership system. The application d
 - JUnit 5
 - Testcontainers
 
-## Architecture
-
-The project contains two main microservices:
-
-- `order-service` - works with users, car configurations, test drives, stock orders, custom orders, payment flow, outbox events, and gRPC client calls to storage.
-- `storage-service` - works with cars, spare parts, assembly orders, RabbitMQ event processing, and exposes a gRPC API for car inventory.
-
-Shared gRPC contracts are stored in:
-
-```text
-proto/
-```
-
-Main modules:
-
-```text
-order-service/
-storage-service/
-proto/
-docker-compose.yml
-```
-
-## Domain-Driven Structure
-
-Each service follows a layered structure:
-
-```text
-domain/          business models, enums, events, repository interfaces
-application/     use cases and application services
-infrastructure/  REST controllers, JPA adapters, gRPC, RabbitMQ, security, exceptions
-```
-
-The domain and application layers are separated from infrastructure details. Persistence, messaging, and transport protocols are implemented in the infrastructure layer.
-
 ## Communication
 
-### Asynchronous Communication
+### RabbitMQ
 
-RabbitMQ is used for asynchronous order approval flow.
-
-Example flow:
+RabbitMQ is used for asynchronous order approval processing.
 
 ```text
 order-service: order is paid
@@ -69,11 +94,9 @@ storage-service: consumes event
 storage-service: creates or updates assembly order
 ```
 
-### Synchronous Communication
+### gRPC
 
-gRPC is used when `order-service` needs an immediate response from `storage-service`.
-
-Example flow:
+gRPC is used for synchronous service-to-service requests when an immediate response is required.
 
 ```text
 GET /api/v1/cars
@@ -97,7 +120,7 @@ GET /api/v1/cars
 | order PostgreSQL | 5432 |
 | storage PostgreSQL | 5433 |
 
-## Running The Project
+## Run Locally
 
 Start infrastructure:
 
@@ -125,39 +148,7 @@ Start `order-service` in another terminal:
 ./gradlew :order-service:bootRun
 ```
 
-## RabbitMQ UI
-
-Open:
-
-```text
-http://localhost:15672
-```
-
-Default development credentials:
-
-```text
-username: guest
-password: guest
-```
-
-## Keycloak
-
-Open:
-
-```text
-http://localhost:8081
-```
-
-Default development admin credentials:
-
-```text
-username: admin
-password: admin
-```
-
-The project expects a Keycloak realm and client configured for JWT authentication.
-
-## API Examples
+## API Example
 
 Get a user token:
 
@@ -171,13 +162,7 @@ export USER_TOKEN=$(curl -s -X POST "http://localhost:8081/realms/autosalon/prot
   | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
 ```
 
-Check token length:
-
-```bash
-echo ${#USER_TOKEN}
-```
-
-Get available cars through `order-service` and gRPC:
+Get available cars:
 
 ```bash
 curl -i "http://localhost:8082/api/v1/cars" \
@@ -191,9 +176,35 @@ curl -i "http://localhost:8082/api/v1/cars/33333333-3333-3333-3333-333333333333"
   -H "Authorization: Bearer $USER_TOKEN"
 ```
 
+## RabbitMQ UI
+
+```text
+http://localhost:15672
+```
+
+Development credentials:
+
+```text
+username: guest
+password: guest
+```
+
+## Keycloak
+
+```text
+http://localhost:8081
+```
+
+Development admin credentials:
+
+```text
+username: admin
+password: admin
+```
+
 ## Tests
 
-Run unit and integration tests:
+Run tests:
 
 ```bash
 ./gradlew :order-service:test :storage-service:test
@@ -213,7 +224,7 @@ Compile both services:
 - Custom orders
 - Stock orders
 - Test drive requests
-- JWT-based authorization with Keycloak
+- JWT authentication with Keycloak
 - Role-based access checks
 - Separate PostgreSQL databases per service
 - Liquibase migrations and seed data
@@ -223,7 +234,7 @@ Compile both services:
 - Idempotent event processing
 - gRPC inventory API from `storage-service`
 - REST endpoints in `order-service` backed by gRPC calls
-- Error handling for unavailable gRPC service with HTTP 503
+- HTTP 503 handling when the gRPC storage service is unavailable
 
 ## Notes
 
